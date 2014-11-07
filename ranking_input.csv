@@ -5,17 +5,17 @@ Dean Hayden,10,3,Simeon Brown
 Rob Ahearn,10,2,Dean Hayden
 Stelios Kyprou,10,6,Rob Ahearn
 Sophie Johns,,,Stelios Kyprou
-Nicolai Stawinoga,,,Sophie Johns
+Nicolai Stawinoga,10,0,Sophie Johns
 Siegfried Hodgson,3,10,Nicolai Stawinoga
 George Christou,10,2,Siegfried Hodgson
 Lilia Adani,0,10,George Christou
 Greeshma Suresh,2,10,Lilia Adani
 Matt Cocken,,,Greeshma Suresh
-Adam Edwardson,,,Matt Cocken
+Adam Edwardson,10,9,Matt Cocken
 Michael Dickson,10,8,Adam Edwardson
 Sunil Pala,10,3,Michael Dickson
 Tim Bilbrough,3,10,Sunil Pala
-Goncalo Ferreira,,,Tim Bilbrough
+Goncalo Ferreira,10,1,Tim Bilbrough
 Robert Blyth,6,10,Goncalo Ferreira
 Peter Kievits,10,8,Robert Blyth
 Amelie Belfort,4,10,Peter Kievits
@@ -31,3 +31,6 @@ Wei Yuan Cho,10,9,Dimitri Fadda
 Christopher Pearson,10,5,Wei Yuan Cho
 
 Atul Roy,10,9,Dean Hayden
+Steven Connochie,10,6,Robert Blyth
+Matthew Cocken,2,10,Sunil Pala
+Rob Ahearn,5,10,Steven Connochie
