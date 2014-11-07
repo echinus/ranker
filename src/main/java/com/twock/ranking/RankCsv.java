@@ -20,7 +20,7 @@ public class RankCsv {
   private static final Logger log = LoggerFactory.getLogger(RankCsv.class);
 
   public static void main(String[] args) throws IOException {
-    final Ranker ranker = new PlainRanker();
+    final Ranker ranker = new WeightedGoalDifferenceRanker();
     String inputFile = args.length > 0 ? args[0] : "ranking_input.csv";
     String outputFile = args.length > 1 ? args[1] : "ranking_output.csv";
     log.info("Reading CSV {} and writing output to {}", inputFile, outputFile);

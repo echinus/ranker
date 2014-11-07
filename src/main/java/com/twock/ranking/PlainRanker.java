@@ -53,7 +53,7 @@ public class PlainRanker implements Ranker {
     }
     for(Matrix factor : factors) {
       int teamIndex = factor.getHeadings().indexOf(team);
-      if (teamIndex != -1) {
+      if(teamIndex != -1) {
         double[] targetRow = factor.getMatrix()[teamIndex];
         return -targetRow[targetRow.length - 1];
       }
@@ -76,7 +76,7 @@ public class PlainRanker implements Ranker {
       thisFactor[groupTeams.indexOf(matches.get(0).getTeam1())] = -1;
       thisFactor[groupTeams.indexOf(matches.get(0).getTeam2())] = 1;
       // todo: take into account the date the game was played and weight accordingly
-      thisFactor[variableCount - 1] = (double)(getTotalScore(matches, 1) - getTotalScore(matches, 2)) / matches.size();
+      thisFactor[variableCount - 1] = calculateRelativeSkill(matches);
       thisFactor[teamCount + matchIndex] = 1;
     }
     // team1 + team2 + ... + teamn = 50 * n
@@ -96,6 +96,17 @@ public class PlainRanker implements Ranker {
     Matrix result = new Matrix(headings, factors);
     log.trace("Calculated initial matrix:{}{}", LF, result);
     return result;
+  }
+
+  /**
+   * Calculate the relative skill.  In the PlainRanker this is simply goal difference but it doesn't handle cases where
+   * people are beaten 10-0 very well.
+   *
+   * @param matches matches to assess, all between the same two people
+   * @return a figure to measure relative skill, positive when team1 has won
+   */
+  public double calculateRelativeSkill(List<Match> matches) {
+    return (double)(getTotalScore(matches, 1) - getTotalScore(matches, 2)) / matches.size();
   }
 
   private int getTotalScore(List<Match> matches, int teamNumber) {
