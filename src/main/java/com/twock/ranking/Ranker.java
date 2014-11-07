@@ -14,6 +14,8 @@ public interface Ranker {
 
   void addMatch(LocalDate date, String team1, String team2, int score1, int score2);
 
+  int getGamesPlayed(String team);
+
   double getRanking(String team1);
 
   List<String> getTeams();

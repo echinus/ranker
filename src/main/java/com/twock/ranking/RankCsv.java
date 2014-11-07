@@ -20,6 +20,7 @@ public class RankCsv {
   private static final Logger log = LoggerFactory.getLogger(RankCsv.class);
 
   public static void main(String[] args) throws IOException {
+//    final Ranker ranker = new PlainRanker();
     final Ranker ranker = new WeightedGoalDifferenceRanker();
     String inputFile = args.length > 0 ? args[0] : "ranking_input.csv";
     String outputFile = args.length > 1 ? args[1] : "ranking_output.csv";
@@ -62,7 +63,7 @@ public class RankCsv {
     try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFile), StandardCharsets.UTF_8)) {
       for(int i1 = 0; i1 < teams.size(); i1++) {
         String team = teams.get(i1);
-        log.info("Rank #{}: {} ({})", i1 + 1, team, ranker.getRanking(team));
+        log.info("Rank #{}: {} ({} - {} games played)", i1 + 1, team, ranker.getRanking(team), ranker.getGamesPlayed(team));
         writer.write(Integer.toString(i1 + 1) + "," + team + "," + ranker.getRanking(team) + "\r\n");
       }
     }

@@ -28,6 +28,17 @@ public class PlainRanker implements Ranker {
   }
 
   @Override
+  public int getGamesPlayed(String team) {
+    int result = 0;
+    for(Match match : matches) {
+      if(match.getTeam1().equals(team) || match.getTeam2().equals(team)) {
+        result++;
+      }
+    }
+    return result;
+  }
+
+  @Override
   public double getRanking(String team) {
     if(factors == null) {
       Map<String, List<Match>> teamMatches = MatchUtils.getMatchGroups(matches);
