@@ -14,7 +14,7 @@ public class Match {
 
   public Match(LocalDate date, String team1, String team2, int team1Score, int team2Score) {
     this.date = date;
-    if (team1.compareTo(team2) < 0) {
+    if(team1.compareTo(team2) < 0) {
       this.team1 = team1;
       this.team2 = team2;
       this.team1Score = team1Score;
@@ -65,5 +65,16 @@ public class Match {
 
   public void setTeam2Score(int team2Score) {
     this.team2Score = team2Score;
+  }
+
+  @Override
+  public String toString() {
+    return "Match{" +
+      "date=" + date +
+      ", team1='" + team1 + '\'' +
+      ", team2='" + team2 + '\'' +
+      ", team1Score=" + team1Score +
+      ", team2Score=" + team2Score +
+      '}';
   }
 }

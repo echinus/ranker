@@ -17,12 +17,14 @@ public class PlainRanker implements Ranker {
   private static final Logger log = LoggerFactory.getLogger(PlainRanker.class);
   private static final int CENTRAL_RANK = 50;
   private List<Match> matches = new ArrayList<Match>();
-  private Matrix factors;
+  private List<Matrix> factors;
 
   @Override
   public void addMatch(LocalDate date, String team1, String team2, int score1, int score2) {
     factors = null;
-    matches.add(new Match(date, team1, team2, score1, score2));
+    Match match = new Match(date, team1, team2, score1, score2);
+    matches.add(match);
+    log.debug("Added new match: {}", match);
   }
 
   @Override
@@ -32,23 +34,31 @@ public class PlainRanker implements Ranker {
       Set<List<Match>> matchGroups = new HashSet<List<Match>>(teamMatches.values());
       if(matchGroups.size() > 1) {
         List<List<Match>> matchGroupList = new ArrayList<>(matchGroups);
-        log.warn("There are {} distinct groups of matches:");
+        log.warn("There are {} distinct groups of matches:", matchGroupList.size());
         for(int i = 0; i < matchGroupList.size(); i++) {
           List<Match> matchList = matchGroupList.get(i);
           log.warn("Group {} ({} teams): {}", i + 1, matchList.size(), getSortedTeamList(matchList));
         }
       }
+      factors = new ArrayList<>();
       for(List<Match> matchGroup : matchGroups) {
         List<String> teams = getSortedTeamList(matchGroup);
-        factors = calculateFactors(matchGroup, teams);
-        factors.convertToReducedRowEchelonForm(0, teams.size(), 0, factors.getMatrix().length);
-        deriveAndEliminateConstants(factors, teams.size(), teams.size() + factors.getMatrix().length - 1);
-        // double[][] ks = rearrangeToClearColumns(factors.clone(), teams.size());
+        Matrix matrix = calculateFactors(matchGroup, teams);
+        log.debug("Initial factors:{}{}", LF, matrix);
+        matrix.convertToReducedRowEchelonForm(0, teams.size(), 0, matrix.getMatrix().length);
+        deriveAndEliminateConstants(matrix, teams.size(), teams.size() + matrix.getMatrix().length - 1);
+        log.debug("Calculated factors:{}{}", LF, matrix);
+        this.factors.add(matrix);
       }
     }
-    int teamIndex = factors.getHeadings().indexOf(team);
-    double[] targetRow = factors.getMatrix()[teamIndex];
-    return -targetRow[targetRow.length - 1];
+    for(Matrix factor : factors) {
+      int teamIndex = factor.getHeadings().indexOf(team);
+      if (teamIndex != -1) {
+        double[] targetRow = factor.getMatrix()[teamIndex];
+        return -targetRow[targetRow.length - 1];
+      }
+    }
+    throw new RuntimeException("Unable to find team " + team + " in any matrices " + factors);
   }
 
   private Matrix calculateFactors(List<Match> allMatches, List<String> groupTeams) {

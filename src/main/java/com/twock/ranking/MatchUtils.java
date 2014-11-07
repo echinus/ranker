@@ -45,6 +45,7 @@ public abstract class MatchUtils {
       } else {
         // team1 and team2 are currently part of separate groups
         matches1.addAll(matches2);
+        matches1.add(match);
         // make all the teams that were pointing to matches2 point to matches1
         for(Match groupMoveMatch : matches2) {
           matchGroups.put(groupMoveMatch.getTeam1(), matches1);
