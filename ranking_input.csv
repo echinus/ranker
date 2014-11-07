@@ -20,8 +20,9 @@ Robert Blyth,6,10,Goncalo Ferreira
 Peter Kievits,10,8,Robert Blyth
 Amelie Belfort,4,10,Peter Kievits
 Atul Roy,10,9,Amelie Belfort
-Joseph Do,,,Atul Roy
-Geoff Carruthers,,,Joseph Do
+Nicole Rainsley,3,10,Atul Roy
+Joseph Do,10,0,Nicole Rainsley
+Geoff Carruthers,10,5,Joseph Do
 Simon Watson,,,Geoff Carruthers
 Steven Connochie,10,5,Simon Watson
 Sharif Ileiwat,4,10,Steven Connochie
@@ -34,3 +35,4 @@ Atul Roy,10,9,Dean Hayden
 Steven Connochie,10,6,Robert Blyth
 Matthew Cocken,2,10,Sunil Pala
 Rob Ahearn,5,10,Steven Connochie
+Peter Kievits,6,10,Christopher Pearson
