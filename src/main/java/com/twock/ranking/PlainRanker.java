@@ -6,6 +6,9 @@ import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.twock.ranking.MatchUtils.getSortedTeamList;
+import static java.lang.Math.signum;
+
 /**
  * @author Chris Pearson
  */
@@ -27,11 +30,19 @@ public class PlainRanker implements Ranker {
     if(factors == null) {
       Map<String, List<Match>> teamMatches = MatchUtils.getMatchGroups(matches);
       Set<List<Match>> matchGroups = new HashSet<List<Match>>(teamMatches.values());
+      if(matchGroups.size() > 1) {
+        List<List<Match>> matchGroupList = new ArrayList<>(matchGroups);
+        log.warn("There are {} distinct groups of matches:");
+        for(int i = 0; i < matchGroupList.size(); i++) {
+          List<Match> matchList = matchGroupList.get(i);
+          log.warn("Group {} ({} teams): {}", i + 1, matchList.size(), getSortedTeamList(matchList));
+        }
+      }
       for(List<Match> matchGroup : matchGroups) {
-        List<String> teams = MatchUtils.getSortedTeamList(matchGroup);
+        List<String> teams = getSortedTeamList(matchGroup);
         factors = calculateFactors(matchGroup, teams);
         factors.convertToReducedRowEchelonForm(0, teams.size(), 0, factors.getMatrix().length);
-        factors.deriveAndEliminateConstants(teams.size(), teams.size() + factors.getMatrix().length - 1);
+        deriveAndEliminateConstants(factors, teams.size(), teams.size() + factors.getMatrix().length - 1);
         // double[][] ks = rearrangeToClearColumns(factors.clone(), teams.size());
       }
     }
@@ -106,6 +117,49 @@ public class PlainRanker implements Ranker {
 
   @Override
   public List<String> getTeams() {
-    return MatchUtils.getSortedTeamList(matches);
+    return getSortedTeamList(matches);
+  }
+
+  public void deriveAndEliminateConstants(Matrix factors, int firstCol, int lastCol) {
+    // we could end up with one of two things:
+    // 1) if team count > match count we'll end up with a constant factor of zero being OK??
+    // 2) if team count <= match count we'll end up with a line with the constants on straight away
+    double[][] matrix = factors.getMatrix();
+    if(!factors.isZeroCells(matrix.length - 1, 0, firstCol)) {
+      // we have no line with just the factors on, add them all together and factor of zero should be fine
+      Matrix matrixCopy = factors.clone();
+      for(int row = 1; row < matrixCopy.getMatrix().length; row++) {
+        matrixCopy.addRows(0, row);
+      }
+      // should now have all zero constants: check
+      if(!matrixCopy.isZeroCells(0, firstCol, lastCol)) {
+        throw new RuntimeException("Unable to process entries: non-zero constants impossible:" + LF + this);
+      }
+      log.debug("All k* = 0");
+      // so now we can just read off the values of a,b,c,d directly from the lines
+      // clear the constants
+      for(int row = 0; row < matrix.length; row++) {
+        log.debug("{}={}", factors.getHeadings().get(row), -matrix[row][matrix[row].length - 1]);
+        for(int col = firstCol; col < lastCol; col++) {
+          matrix[row][col] = 0;
+        }
+      }
+    } else {
+      // the last line contains the constants: use total / sum(abs(constant factors)) to choose the values
+      double[] lastRow = matrix[matrix.length - 1];
+      double unitValue = lastRow[lastCol] / factors.sumAbs(matrix.length - 1, firstCol, lastCol);
+      for(int col = firstCol; col < lastCol; col++) {
+        double constantValue = signum(lastRow[col]) * unitValue;
+        log.debug("{}={}", factors.getHeadings().get(col), constantValue);
+        for(double[] thisRow : matrix) {
+          thisRow[thisRow.length - 1] -= thisRow[col] * constantValue;
+          thisRow[col] = 0;
+        }
+      }
+      for(int row = 0; row < firstCol; row++) {
+        log.debug("{}={}", factors.getHeadings().get(row), -matrix[row][matrix[row].length - 1]);
+      }
+    }
+    log.trace("After deriveAndEliminateConstants(firstCol={}, lastCol={}):{}{}", firstCol, lastCol, LF, this);
   }
 }

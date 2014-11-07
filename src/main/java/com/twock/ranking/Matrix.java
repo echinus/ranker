@@ -187,7 +187,7 @@ public class Matrix implements Cloneable {
     log.trace("After zeroCellBySubtractingRow(rowToChange={}, columnToZero={}, sourceRow={}):{}{}", rowToChange, columnToZero, sourceRow, LF, this);
   }
 
-  private void addRows(int rowToChange, int sourceRow) {
+  public void addRows(int rowToChange, int sourceRow) {
     for(int col = 0; col < matrix[rowToChange].length; col++) {
       matrix[rowToChange][col] += matrix[sourceRow][col];
     }
@@ -202,50 +202,7 @@ public class Matrix implements Cloneable {
     return this;
   }
 
-  public Matrix deriveAndEliminateConstants(int firstCol, int lastCol) {
-    // we could end up with one of two things:
-    // 1) if team count > match count we'll end up with a constant factor of zero being OK??
-    // 2) if team count <= match count we'll end up with a line with the constants on straight away
-    if(!isZeroCells(matrix.length - 1, 0, firstCol)) {
-      // we have no line with just the factors on, add them all together and factor of zero should be fine
-      Matrix matrixCopy = clone();
-      for(int row = 1; row < matrixCopy.matrix.length; row++) {
-        matrixCopy.addRows(0, row);
-      }
-      // should now have all zero constants: check
-      if(!matrixCopy.isZeroCells(0, firstCol, lastCol)) {
-        throw new RuntimeException("Unable to process entries: non-zero constants impossible:" + LF + this);
-      }
-      log.debug("All k* = 0");
-      // so now we can just read off the values of a,b,c,d directly from the lines
-      // clear the constants
-      for(int row = 0; row < matrix.length; row++) {
-        log.debug("{}={}", headings.get(row), -matrix[row][matrix[row].length - 1]);
-        for(int col = firstCol; col < lastCol; col++) {
-          matrix[row][col] = 0;
-        }
-      }
-    } else {
-      // the last line contains the constants: use total / sum(abs(constant factors)) to choose the values
-      double[] lastRow = matrix[matrix.length - 1];
-      double unitValue = lastRow[lastCol] / sumAbs(matrix.length - 1, firstCol, lastCol);
-      for(int col = firstCol; col < lastCol; col++) {
-        double constantValue = signum(lastRow[col]) * unitValue;
-        log.debug("{}={}", headings.get(col), constantValue);
-        for(double[] thisRow : matrix) {
-          thisRow[thisRow.length - 1] -= thisRow[col] * constantValue;
-          thisRow[col] = 0;
-        }
-      }
-      for (int row = 0; row < firstCol; row++) {
-        log.debug("{}={}", headings.get(row), -matrix[row][matrix[row].length - 1]);
-      }
-    }
-    log.trace("After deriveAndEliminateConstants(firstCol={}, lastCol={}):{}{}", firstCol, lastCol, LF, this);
-    return this;
-  }
-
-  private double sumAbs(int row, int firstCol, int lastCol) {
+  public double sumAbs(int row, int firstCol, int lastCol) {
     double result = 0;
     for(int i = firstCol; i < lastCol; i++) {
       result += abs(matrix[row][i]);
@@ -253,7 +210,7 @@ public class Matrix implements Cloneable {
     return result;
   }
 
-  private boolean isZeroCells(int row, int firstCol, int lastCol) {
+  public boolean isZeroCells(int row, int firstCol, int lastCol) {
     for(int i = firstCol; i < lastCol; i++) {
       if(Double.compare(Math.abs(matrix[row][i]), 0.00000000001) > 0) {
         return false;
