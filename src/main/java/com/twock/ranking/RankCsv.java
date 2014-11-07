@@ -43,10 +43,11 @@ public class RankCsv {
         }
         if(score1 < 0 || score1 > 10 || score2 < 0 || score2 > 10) {
           log.warn("Ignoring CSV line {} since it has an invalid/missing score: {}", i + 1, csvLine);
+        } else {
+          String team1 = cols[0];
+          String team2 = cols[3];
+          ranker.addMatch(new LocalDate(), team1, team2, score1, score2);
         }
-        String team1 = cols[0];
-        String team2 = cols[3];
-        ranker.addMatch(new LocalDate(), team1, team2, score1, score2);
       }
     }
     // now calculate/display output
