@@ -4,7 +4,7 @@ Simeon Brown,6,10,Varvara Nikolaidou
 Dean Hayden,10,3,Simeon Brown
 Rob Ahearn,10,2,Dean Hayden
 Stelios Kyprou,10,6,Rob Ahearn
-Sophie Johns,,,Stelios Kyprou
+Sophie Johns,0,10,Stelios Kyprou
 Nicolai Stawinoga,10,0,Sophie Johns
 Siegfried Hodgson,3,10,Nicolai Stawinoga
 George Christou,10,2,Siegfried Hodgson
@@ -26,13 +26,13 @@ Geoff Carruthers,10,5,Joseph Do
 Simon Watson,,,Geoff Carruthers
 Steven Connochie,10,5,Simon Watson
 Sharif Ileiwat,4,10,Steven Connochie
-Ben Ramadan,,,Sharif Ileiwat
+Ben Ramadan,10,1,Sharif Ileiwat
 Dimitri Fadda,,,Ben Ramadan
 Wei Yuan Cho,10,9,Dimitri Fadda
 Christopher Pearson,10,5,Wei Yuan Cho
 
 Atul Roy,10,9,Dean Hayden
 Steven Connochie,10,6,Robert Blyth
-Matthew Cocken,2,10,Sunil Pala
+Matt Cocken,2,10,Sunil Pala
 Rob Ahearn,10,5,Steven Connochie
 Peter Kievits,6,10,Christopher Pearson
