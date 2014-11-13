@@ -156,6 +156,8 @@ public class PlainRanker implements Ranker {
     // we could end up with one of two things:
     // 1) if team count > match count we'll end up with a constant factor of zero being OK??
     // 2) if team count <= match count we'll end up with a line with the constants on straight away
+    Matrix originalMatrix = factors.clone();
+    double[] calculatedValues = new double[originalMatrix.getHeadings().size() - 1];
     double[][] matrix = factors.getMatrix();
     if(!factors.isZeroCells(matrix.length - 1, 0, firstCol)) {
       // we have no line with just the factors on, add them all together and factor of zero should be fine
@@ -171,7 +173,8 @@ public class PlainRanker implements Ranker {
       // so now we can just read off the values of a,b,c,d directly from the lines
       // clear the constants
       for(int row = 0; row < matrix.length; row++) {
-        log.debug("{}={}", factors.getHeadings().get(row), -matrix[row][matrix[row].length - 1]);
+        calculatedValues[row] = -matrix[row][matrix[row].length - 1];
+        log.debug("{}={}", factors.getHeadings().get(row), calculatedValues[row]);
         for(int col = firstCol; col < lastCol; col++) {
           matrix[row][col] = 0;
         }
@@ -181,17 +184,21 @@ public class PlainRanker implements Ranker {
       double[] lastRow = matrix[matrix.length - 1];
       double unitValue = lastRow[lastCol] / factors.sumAbs(matrix.length - 1, firstCol, lastCol);
       for(int col = firstCol; col < lastCol; col++) {
-        double constantValue = signum(lastRow[col]) * unitValue;
+        double constantValue = signum(lastRow[col]) * -unitValue;
         log.debug("{}={}", factors.getHeadings().get(col), constantValue);
+        calculatedValues[col] = constantValue;
         for(double[] thisRow : matrix) {
-          thisRow[thisRow.length - 1] -= thisRow[col] * constantValue;
+          thisRow[thisRow.length - 1] += thisRow[col] * constantValue;
           thisRow[col] = 0;
         }
       }
       for(int row = 0; row < firstCol; row++) {
-        log.debug("{}={}", factors.getHeadings().get(row), -matrix[row][matrix[row].length - 1]);
+        calculatedValues[row] = -matrix[row][matrix[row].length - 1];
+        log.debug("{}={}", factors.getHeadings().get(row), calculatedValues[row]);
       }
     }
+    // double check the original matrix still holds with zero constant values - calculatedValues already has 0
+    originalMatrix.checkSolution(calculatedValues);
     log.trace("After deriveAndEliminateConstants(firstCol={}, lastCol={}):{}{}", firstCol, lastCol, LF, this);
   }
 }

@@ -15,6 +15,8 @@ import static java.util.Arrays.copyOf;
  * @author Chris Pearson
  */
 public class Matrix implements Cloneable {
+  private static final double ALMOST_ZERO = 0.000000001;
+  private static final boolean FAIL_ON_NOT_HOLD = true;
   private static final Logger log = LoggerFactory.getLogger(Matrix.class);
   private static final String LF = System.getProperty("line.separator");
   private List<String> headings;
@@ -164,7 +166,7 @@ public class Matrix implements Cloneable {
         }
       }
     }
-    log.trace("After convertToReducedRowEchelonForm(firstColumn={}, lastColumn={}, firstRow={}, lastRow={}):{}{}", firstColumn, lastColumn, firstRow, lastRow, LF, this);
+    log.debug("After convertToReducedRowEchelonForm(firstColumn={}, lastColumn={}, firstRow={}, lastRow={}):{}{}", firstColumn, lastColumn, firstRow, lastRow, LF, this);
     return this;
   }
 
@@ -217,5 +219,35 @@ public class Matrix implements Cloneable {
       }
     }
     return true;
+  }
+
+  public void checkSolution(double[] calculatedValues) {
+    NumberFormat format = NumberFormat.getNumberInstance();
+    format.setMaximumFractionDigits(4);
+    format.setMinimumFractionDigits(0);
+    boolean holds = true;
+    for(int row = 0; row < matrix.length; row++) {
+      double total = 0;
+      StringBuilder sb = new StringBuilder();
+      for(int col = 0; col < matrix[row].length - 1; col++) {
+        total += matrix[row][col] * calculatedValues[col];
+        if(abs(matrix[row][col]) >= ALMOST_ZERO) {
+          if(sb.length() > 0) {
+            sb.append(' ');
+          }
+          sb.append(headings.get(col)).append(':');
+          sb.append(format.format(matrix[row][col])).append('*');
+          sb.append(format.format(calculatedValues[col]));
+        }
+      }
+      total += matrix[row][matrix[row].length - 1];
+      if(abs(total) >= ALMOST_ZERO) {
+        log.error("Row {} does not hold (total={}): {}", row, total, sb.toString());
+        holds = false;
+      }
+    }
+    if(!holds && FAIL_ON_NOT_HOLD) {
+      throw new RuntimeException("Matrix does not hold: " + LF + toString());
+    }
   }
 }
