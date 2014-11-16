@@ -45,12 +45,12 @@ public class TestRanking {
         "T:E-10,F-2",
       }, "A>B,B>C,C>D,D>E,E>F"},
       {"Test of many games", new String[]{
-        "T:A-10,B-8",
+        "T:A-10,B-2",
         "T:A-10,C-6",
         "T:A-10,D-4",
-        "T:B-10,C-8",
-        "T:B-10,D-6",
-        "T:C-10,D-8",
+        "T:B-10,C-2",
+        "T:B-10,D-2",
+        "T:C-10,D-1",
       }, "A>B,B>C,C>D"},
       {"Two games - caused issues", new String[]{
         "T:A-4,B-10",

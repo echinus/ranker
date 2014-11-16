@@ -22,9 +22,6 @@ public class Matrix implements Cloneable {
   private List<String> headings;
   private double[][] matrix;
 
-  public Matrix() {
-  }
-
   public Matrix(List<String> headings, double[][] matrix) {
     this.headings = headings;
     this.matrix = matrix;
@@ -34,16 +31,8 @@ public class Matrix implements Cloneable {
     return headings;
   }
 
-  public void setHeadings(List<String> headings) {
-    this.headings = headings;
-  }
-
   public double[][] getMatrix() {
     return matrix;
-  }
-
-  public void setMatrix(double[][] matrix) {
-    this.matrix = matrix;
   }
 
   @Override
@@ -91,7 +80,7 @@ public class Matrix implements Cloneable {
   protected Matrix clone() {
     try {
       Matrix clone = (Matrix)super.clone();
-      clone.headings = new ArrayList<String>(headings);
+      clone.headings = new ArrayList<>(headings);
       clone.matrix = new double[matrix.length][];
       for(int i = 0; i < matrix.length; i++) {
         clone.matrix[i] = copyOf(matrix[i], matrix[i].length);
@@ -119,54 +108,35 @@ public class Matrix implements Cloneable {
         return i;
       }
     }
-    throw new RuntimeException("Unable to find a row with non-empty column " + col + " as the first non-zero cell in:" + LF + toString());
+    return -1;
   }
-
-  //  public Matrix combineToFirstRow(int firstColumn, int columnCount) {
-  //    convertToReducedRowEchelonForm(firstColumn, )
-  //  }
 
   /**
    * Transform the matrix using the specified rows to achieve 1s in the diagonals of the [firstColumn-lastColumn) range.
    *
-   * @param firstColumn column index to start from (0 based, includes the specified column)
-   * @param lastColumn column index to finish at (0 based, excludes the specified column)
-   * @param firstRow row index to start from (0 based, includes the specified row)
-   * @param lastRow row index to finish at (0 based, excludes the specified row)
    * @return this matrix
    */
-  public Matrix convertToReducedRowEchelonForm(int firstColumn, int lastColumn, int firstRow, int lastRow) {
-    if(firstColumn < 0) {
-      throw new ArrayIndexOutOfBoundsException("firstColumn of " + firstColumn + " is invalid");
-    }
-    if(firstRow < 0) {
-      throw new ArrayIndexOutOfBoundsException("firstRow of " + firstRow + " is invalid");
-    }
-    if(lastColumn > matrix[0].length) {
-      throw new ArrayIndexOutOfBoundsException("lastColumn of " + lastColumn + " is invalid");
-    }
-    if(lastRow > matrix.length) {
-      throw new ArrayIndexOutOfBoundsException("lastRow of " + lastRow + " is invalid");
-    }
-    log.trace("Before convertToReducedRowEchelonForm(firstColumn={}, lastColumn={}, firstRow={}, lastRow={}):{}{}", firstColumn, lastColumn, firstRow, lastRow, LF, this);
-    for(int i = 0; i < min(lastColumn - firstColumn, lastRow - firstRow); i++) {
-      int workRow = firstRow + i;
-      int workCol = firstColumn + i;
-      int startRow = findFirstRowEmptyUntil(workCol, firstRow, lastRow);
-      if(startRow > workRow) {
-        swap(startRow, workRow);
+  public Matrix convertToReducedRowEchelonForm() {
+    log.trace("Before convertToReducedRowEchelonForm():{}{}", LF, this);
+    for(int i = 0; i < min(matrix.length, matrix[0].length); i++) {
+      int startRow = findFirstRowEmptyUntil(i, 0, matrix.length);
+      if (startRow == -1) {
+        continue;
       }
-      for(int row = firstRow; row < lastRow; row++) {
-        if(row == workRow) {
-          if(matrix[row][workCol] != 0) {
-            multiplyRow(row, 1 / matrix[row][workCol]);
+      if(startRow > i) {
+        swap(startRow, i);
+      }
+      for(int row = 0; row < matrix.length; row++) {
+        if(row == i) {
+          if(matrix[row][i] != 0) {
+            multiplyRow(row, 1 / matrix[row][i]);
           }
         } else {
-          zeroCellBySubtractingRow(row, workCol, workRow);
+          zeroCellBySubtractingRow(row, i, i);
         }
       }
     }
-    log.debug("After convertToReducedRowEchelonForm(firstColumn={}, lastColumn={}, firstRow={}, lastRow={}):{}{}", firstColumn, lastColumn, firstRow, lastRow, LF, this);
+    log.debug("After convertToReducedRowEchelonForm():{}{}", LF, this);
     return this;
   }
 
@@ -204,29 +174,32 @@ public class Matrix implements Cloneable {
     return this;
   }
 
-  public double sumAbs(int row, int firstCol, int lastCol) {
-    double result = 0;
-    for(int i = firstCol; i < lastCol; i++) {
-      result += abs(matrix[row][i]);
-    }
-    return result;
-  }
-
-  public boolean isZeroCells(int row, int firstCol, int lastCol) {
-    for(int i = firstCol; i < lastCol; i++) {
-      if(Double.compare(Math.abs(matrix[row][i]), 0.00000000001) > 0) {
-        return false;
+  public boolean isZeroCells(int firstRow, int lastRow, int firstCol, int lastCol) {
+    for(int row = firstRow; row < lastRow; row++) {
+      for(int col = firstCol; col < lastCol; col++) {
+        double testValue = matrix[row][col];
+        if(!isZero(testValue)) {
+          return false;
+        }
       }
     }
     return true;
   }
 
+  public static boolean isZero(double testValue) {
+    return Double.compare(Math.abs(testValue), 0.00000000001) < 0;
+  }
+
   public void checkSolution(double[] calculatedValues) {
+    checkSolution(calculatedValues, true);
+  }
+
+  public void checkSolution(double[] calculatedValues, boolean lastLine) {
     NumberFormat format = NumberFormat.getNumberInstance();
     format.setMaximumFractionDigits(4);
     format.setMinimumFractionDigits(0);
     boolean holds = true;
-    for(int row = 0; row < matrix.length; row++) {
+    for(int row = 0; row < matrix.length - (lastLine ? 0 : 1); row++) {
       double total = 0;
       StringBuilder sb = new StringBuilder();
       for(int col = 0; col < matrix[row].length - 1; col++) {
@@ -249,5 +222,13 @@ public class Matrix implements Cloneable {
     if(!holds && FAIL_ON_NOT_HOLD) {
       throw new RuntimeException("Matrix does not hold: " + LF + toString());
     }
+  }
+
+  public int getMatchCount() {
+    return matrix.length - 1;
+  }
+
+  public int getTeamCount() {
+    return headings.size() - matrix.length;
   }
 }
